@@ -68,20 +68,13 @@ microservices-visualizer/
 
 ### 📊 Flux de données
 
-```mermaid
-Diagram.download-icon {
-            cursor: pointer;
-            transform-origin: center;
-        }
-        .download-icon .arrow-part {
-            transition: transform 0.35s cubic-bezier(0.35, 0.2, 0.14, 0.95);
-             transform-origin: center;
-        }
-        button:has(.download-icon):hover .download-icon .arrow-part, button:has(.download-icon):focus-visible .download-icon .arrow-part {
-          transform: translateY(-1.5px);
-        }
-        #mermaid-diagram-rred{font-family:var(--font-geist-sans);font-size:12px;fill:#000000;}#mermaid-diagram-rred .error-icon{fill:#552222;}#mermaid-diagram-rred .error-text{fill:#552222;stroke:#552222;}#mermaid-diagram-rred .edge-thickness-normal{stroke-width:1px;}#mermaid-diagram-rred .edge-thickness-thick{stroke-width:3.5px;}#mermaid-diagram-rred .edge-pattern-solid{stroke-dasharray:0;}#mermaid-diagram-rred .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-diagram-rred .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-diagram-rred .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-diagram-rred .marker{fill:#666;stroke:#666;}#mermaid-diagram-rred .marker.cross{stroke:#666;}#mermaid-diagram-rred svg{font-family:var(--font-geist-sans);font-size:12px;}#mermaid-diagram-rred p{margin:0;}#mermaid-diagram-rred .label{font-family:var(--font-geist-sans);color:#000000;}#mermaid-diagram-rred .cluster-label text{fill:#333;}#mermaid-diagram-rred .cluster-label span{color:#333;}#mermaid-diagram-rred .cluster-label span p{background-color:transparent;}#mermaid-diagram-rred .label text,#mermaid-diagram-rred span{fill:#000000;color:#000000;}#mermaid-diagram-rred .node rect,#mermaid-diagram-rred .node circle,#mermaid-diagram-rred .node ellipse,#mermaid-diagram-rred .node polygon,#mermaid-diagram-rred .node path{fill:#eee;stroke:#999;stroke-width:1px;}#mermaid-diagram-rred .rough-node .label text,#mermaid-diagram-rred .node .label text{text-anchor:middle;}#mermaid-diagram-rred .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-diagram-rred .node .label{text-align:center;}#mermaid-diagram-rred .node.clickable{cursor:pointer;}#mermaid-diagram-rred .arrowheadPath{fill:#333333;}#mermaid-diagram-rred .edgePath .path{stroke:#666;stroke-width:2.0px;}#mermaid-diagram-rred .flowchart-link{stroke:#666;fill:none;}#mermaid-diagram-rred .edgeLabel{background-color:white;text-align:center;}#mermaid-diagram-rred .edgeLabel p{background-color:white;}#mermaid-diagram-rred .edgeLabel rect{opacity:0.5;background-color:white;fill:white;}#mermaid-diagram-rred .labelBkg{background-color:rgba(255, 255, 255, 0.5);}#mermaid-diagram-rred .cluster rect{fill:hsl(0, 0%, 98.9215686275%);stroke:#707070;stroke-width:1px;}#mermaid-diagram-rred .cluster text{fill:#333;}#mermaid-diagram-rred .cluster span{color:#333;}#mermaid-diagram-rred div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:var(--font-geist-sans);font-size:12px;background:hsl(-160, 0%, 93.3333333333%);border:1px solid #707070;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-diagram-rred .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#000000;}#mermaid-diagram-rred .flowchart-link{stroke:hsl(var(--gray-400));stroke-width:1px;}#mermaid-diagram-rred .marker,#mermaid-diagram-rred marker,#mermaid-diagram-rred marker *{fill:hsl(var(--gray-400))!important;stroke:hsl(var(--gray-400))!important;}#mermaid-diagram-rred .label,#mermaid-diagram-rred text,#mermaid-diagram-rred text>tspan{fill:hsl(var(--black))!important;color:hsl(var(--black))!important;}#mermaid-diagram-rred .background,#mermaid-diagram-rred rect.relationshipLabelBox{fill:hsl(var(--white))!important;}#mermaid-diagram-rred .entityBox,#mermaid-diagram-rred .attributeBoxEven{fill:hsl(var(--gray-150))!important;}#mermaid-diagram-rred .attributeBoxOdd{fill:hsl(var(--white))!important;}#mermaid-diagram-rred .label-container,#mermaid-diagram-rred rect.actor{fill:hsl(var(--white))!important;stroke:hsl(var(--gray-400))!important;}#mermaid-diagram-rred line{stroke:hsl(var(--gray-400))!important;}#mermaid-diagram-rred :root{--mermaid-font-family:var(--font-geist-sans);}RequêteAuthentificationDonnées utilisateurCatalogue produitsGestion commandesStockageStockageStockageConfigurationConfigurationConfigurationConfigurationClientAPI GatewayAuth ServiceUser ServiceProduct ServiceOrder ServiceUser DBProduct DBOrder DBConfig Server
-```
+<div align="center">
+  <h4>Une visualisation interactive des communications entre microservices</h4>
+  
+  <img src="images/senario_dessigner.png" alt="Diagramme des flux de données entre microservices">
+  
+  <p><em>Schéma illustrant les interactions entre les différents services et bases de données</em></p>
+</div>
 
 ## 🎮 Comment utiliser
 
