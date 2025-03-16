@@ -1,5 +1,3 @@
-Thought for 1 secondVoici la version complète du README.md que vous pouvez directement copier-coller dans votre dépôt :
-
 ### 🚀 Microservices Architecture Visualizer
 
 ## ✨ Caractéristiques
