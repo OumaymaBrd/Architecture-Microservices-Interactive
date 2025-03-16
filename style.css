@@ -1,0 +1,65 @@
+/* Ce fichier est optionnel car les styles sont inclus directement dans le HTML via Tailwind */
+/* Vous pouvez l'utiliser pour ajouter des styles personnalisés supplémentaires si nécessaire */
+
+/* Animation de pulsation */
+@keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+  
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Transitions fluides */
+  .transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+  
+  /* Effets de survol */
+  .hover-effect:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1);
+  }
+  
+  /* Dégradés de couleur */
+  .bg-gradient-blue {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+  }
+  
+  .bg-gradient-purple {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  }
+  
+  .bg-gradient-red {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+  }
+  
+  .bg-gradient-green {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+  
+  .bg-gradient-amber {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+  
+  .bg-gradient-pink {
+    background: linear-gradient(135deg, #ec4899, #db2777);
+  }
+  
+  .bg-gradient-cyan {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+  }
+  
+  .bg-gradient-slate {
+    background: linear-gradient(135deg, #64748b, #475569);
+  }
+  
+  
