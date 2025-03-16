@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture Microservices Interactive</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- <link rel="stylesheet" href="style.css"> -->
+<style>
+    /* Styles de base */
+.dark {
+--bg-color: #0f172a;
+--text-color: #f8fafc;
+--card-bg: #1e293b;
+--border-color: #334155;
+--primary-color: #3b82f6;
+--secondary-color: #8b5cf6;
+}
+
+body {
+background-color: var(--bg-color, #f8fafc);
+color: var(--text-color, #0f172a);
+transition: background-color 0.3s, color 0.3s;
+}
+
+.card {
+background-color: var(--card-bg, #ffffff);
+border: 1px solid var(--border-color, #e2e8f0);
+border-radius: 0.5rem;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Styles des services */
+.service {
+position: absolute;
+border-radius: 0.5rem;
+padding: 0.5rem;
+text-align: center;
+transition: all 0.3s ease;
+border: 2px solid #e2e8f0;
+background-color: #ffffff;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dark .service {
+background-color: #1e293b;
+border-color: #334155;
+}
+
+.service-active {
+border-color: #3b82f6;
+box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+animation: pulse 2s infinite;
+}
+
+/* Styles des connexions */
+.connection {
+stroke: currentColor;
+stroke-width: 1px;
+opacity: 0.3;
+transition: all 0.3s ease;
+}
+
+.connection-active {
+stroke: #3b82f6;
+stroke-width: 3px;
+opacity: 1;
+animation: pulse 2s infinite;
+}
+
+/* Styles des paquets de données */
+.data-packet {
+position: absolute;
+width: 16px;
+height: 16px;
+border-radius: 50%;
+transform: translate(-50%, -50%);
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+transition: left 0.05s linear, top 0.05s linear;
+z-index: 10;
+}
+
+/* Styles pour l'avatar du créateur */
+.avatar-container {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.creator-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Adaptation pour les écrans plus petits */
+@media (max-width: 1024px) {
+  .flex.justify-between.items-center.mb-8 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .flex.justify-between.items-center.mb-8 > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 768px) {
+  .flex.items-center.gap-4 {
+    flex-wrap: wrap;
+  }
+  
+  .border-l.pl-4 {
+    border-left: none;
+    padding-left: 0;
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+}
+
+.data-packet-request {
+background-color: #3b82f6;
+}
+.data-packet-response {
+background-color: #10b981;
+}
+.data-packet-database {
+background-color: #8b5cf6;
+}
+.data-packet-process {
+background-color: #f59e0b;
+}
+
+/* Styles des popups */
+.popup {
+position: absolute;
+padding: 0.75rem;
+background-color: white;
+border: 2px solid rgba(59, 130, 246, 0.2);
+border-radius: 0.5rem;
+box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+max-width: 250px;
+z-index: 20;
+transform: translate(-50%, -50%);
+opacity: 0;
+transition: opacity 0.3s ease, transform 0.3s ease;
+pointer-events: none;
+}
+
+.dark .popup {
+background-color: #1e293b;
+border-color: rgba(59, 130, 246, 0.3);
+}
+
+.popup-visible {
+opacity: 1;
+transform: translate(-50%, -50%) translateY(0);
+}
+
+/* Styles des logs */
+.log-item {
+padding-left: 0.5rem;
+padding-top: 0.25rem;
+padding-bottom: 0.25rem;
+margin-bottom: 0.5rem;
+border-left-width: 4px;
+opacity: 0;
+transform: translateX(-10px);
+transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.log-item-visible {
+opacity: 1;
+transform: translateX(0);
+}
+
+.log-request {
+border-left-color: #3b82f6;
+background-color: rgba(59, 130, 246, 0.05);
+}
+
+.log-response {
+border-left-color: #10b981;
+background-color: rgba(16, 185, 129, 0.05);
+}
+
+.log-database {
+border-left-color: #8b5cf6;
+background-color: rgba(139, 92, 246, 0.05);
+}
+
+.log-process {
+border-left-color: #f59e0b;
+background-color: rgba(245, 158, 11, 0.05);
+}
+
+/* Styles des badges */
+.badge {
+display: inline-flex;
+align-items: center;
+border-radius: 9999px;
+padding: 0.125rem 0.5rem;
+font-size: 0.75rem;
+font-weight: 600;
+}
+
+.badge-request {
+background-color: rgba(59, 130, 246, 0.1);
+color: #3b82f6;
+}
+
+.badge-response {
+background-color: rgba(16, 185, 129, 0.1);
+color: #10b981;
+}
+
+.badge-database {
+background-color: rgba(139, 92, 246, 0.1);
+color: #8b5cf6;
+}
+
+.badge-process {
+background-color: rgba(245, 158, 11, 0.1);
+color: #f59e0b;
+}
+
+/* Animations */
+@keyframes pulse {
+0%,
+100% {
+  opacity: 1;
+}
+50% {
+  opacity: 0.7;
+}
+}
+
+/* Styles des boutons */
+.button {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+border-radius: 0.375rem;
+font-size: 0.875rem;
+font-weight: 500;
+padding: 0.5rem 1rem;
+transition: all 0.2s;
+}
+
+.button-outline {
+background-color: transparent;
+border: 1px solid #e2e8f0;
+}
+
+.dark .button-outline {
+border-color: #334155;
+}
+
+.button-active {
+background-color: #3b82f6;
+color: white;
+border-color: #3b82f6;
+}
+
+.button:hover:not(:disabled) {
+background-color: rgba(59, 130, 246, 0.1);
+}
+
+.button-active:hover {
+background-color: #2563eb;
+}
+
+.button:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+}
+
+/* Styles des services colorés */
+.service-client {
+background: linear-gradient(to bottom right, #60a5fa, #2563eb);
+color: white;
+}
+
+.service-gateway {
+background: linear-gradient(to bottom right, #a78bfa, #7c3aed);
+color: white;
+}
+
+.service-auth {
+background: linear-gradient(to bottom right, #f87171, #dc2626);
+color: white;
+}
+
+.service-user {
+background: linear-gradient(to bottom right, #4ade80, #16a34a);
+color: white;
+}
+
+.service-product {
+background: linear-gradient(to bottom right, #fbbf24, #d97706);
+color: white;
+}
+
+.service-order {
+background: linear-gradient(to bottom right, #f472b6, #db2777);
+color: white;
+}
+
+.service-config {
+background: linear-gradient(to bottom right, #22d3ee, #0891b2);
+color: white;
+}
+
+.service-database {
+background: linear-gradient(to bottom right, #94a3b8, #64748b);
+color: white;
+}
+</style>
+<script>
+// Configuration Tailwind
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: "#3b82f6",
+          foreground: "#ffffff",
+        },
+        secondary: {
+          DEFAULT: "#1e293b",
+          foreground: "#ffffff",
+        },
+        muted: {
+          DEFAULT: "#f1f5f9",
+          foreground: "#64748b",
+        },
+        accent: {
+          DEFAULT: "#f1f5f9",
+          foreground: "#1e293b",
+        },
+        destructive: {
+          DEFAULT: "#ef4444",
+          foreground: "#ffffff",
+        },
+        border: "#e2e8f0",
+        input: "#e2e8f0",
+        ring: "#3b82f6",
+        background: "#ffffff",
+        foreground: "#0f172a",
+        card: {
+          DEFAULT: "#ffffff",
+          foreground: "#0f172a",
+        },
+      },
+      borderRadius: {
+        lg: "0.5rem",
+        md: "0.375rem",
+        sm: "0.25rem",
+      },
+      animation: {
+        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+      keyframes: {
+        pulse: {
+          "0%, 100%": { opacity: 1 },
+          "50%": { opacity: 0.7 },
+        },
+      },
+    },
+  },
+}
+</script>
+</head>
+<body class="dark">
+<div class="min-h-screen p-4">
+  <div class="container mx-auto py-6">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+        Architecture Microservices Interactive
+      </h1>
+      <!-- Me Profile -->
+
+      <div class="flex items-center gap-3 border-l pl-4 border-gray-300 dark:border-gray-700">
+        <div class="avatar-container">
+          <img src="images/Photo_personnel.JPG" alt="Photo du créateur" class="creator-avatar">
+        </div>
+        <div>
+          <div class="font-medium">Oumayma Bramid</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Créateur & Développeur</div>
+        </div>
+      </div>
+
+
+
+      <!-- me -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="text-sm">Vitesse:</span>
+          <button id="speed-05" class="button button-outline" data-speed="0.5">0.5x</button>
+          <button id="speed-1" class="button button-outline button-active" data-speed="1">1x</button>
+          <button id="speed-2" class="button button-outline" data-speed="2">2x</button>
+        </div>
+        <div class="flex items-center gap-2 ml-4">
+          <button id="pause-play" class="button button-outline" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-4 w-4"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+            Pause
+          </button>
+          <button id="save-scenario" class="button button-outline" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-4 w-4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            Sauvegarder
+          </button>
+        </div>
+        <button id="theme-toggle" class="button button-outline ml-auto">
+          Mode Clair
+        </button>
+      </div>
+    </div>
+    
+    <div class="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+      <div class="md:col-span-1">
+        <div class="card p-6">
+          <h2 class="text-2xl font-semibold mb-2">Scénarios</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Sélectionnez un scénario pour visualiser le flux de communication
+          </p>
+          <div class="space-y-2">
+            <button id="scenario-orderCreation" class="button button-outline w-full justify-start">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-4 w-4"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+              Création d'une commande
+            </button>
+            
+            <button id="scenario-productSearch" class="button button-outline w-full justify-start">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-4 w-4"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>
+              Recherche de produits
+            </button>
+            
+            <button id="scenario-userAuthentication" class="button button-outline w-full justify-start">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-4 w-4"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Authentification utilisateur
+            </button>
+          </div>
+          
+          <div id="step-info" class="pt-4 border-t mt-4 hidden">
+            <h3 class="font-medium mb-2">Étape actuelle:</h3>
+            <p id="step-description" class="text-sm">
+              Sélectionnez un scénario pour commencer
+            </p>
+            
+            <div class="mt-4">
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-purple-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+              <div id="step-counter" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Étape 0 / 0
+              </div>
+            </div>
+          </div>
+          
+          <!-- Section pour les scénarios sauvegardés -->
+          <div id="saved-scenarios" class="pt-4 border-t mt-4 hidden">
+            <h3 class="font-medium mb-2">Scénarios sauvegardés:</h3>
+            <div id="saved-scenarios-list" class="space-y-2">
+              <!-- Les scénarios sauvegardés seront ajoutés ici dynamiquement -->
+            </div>
+          </div>
+        </div>
+        
+        <div class="card p-6 mt-4">
+          <h2 class="text-2xl font-semibold mb-2">Légende</h2>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
+              <span class="text-sm">Service actif</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+              <span class="text-sm">Communication active</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+              <span class="text-sm">Requête</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-green-500"></div>
+              <span class="text-sm">Réponse</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+              <span class="text-sm">Opération DB</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+              <span class="text-sm">Traitement</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="md:col-span-2 lg:col-span-3">
+        <div class="card h-full">
+          <div class="p-6">
+            <h2 class="text-2xl font-semibold mb-2">Visualisation du Flux</h2>
+            <p id="scenario-title" class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Sélectionnez un scénario pour commencer
+            </p>
+          </div>
+          <div class="p-4">
+            <div id="diagram" class="relative h-[600px] border rounded-lg p-4 bg-gray-100/10 dark:bg-gray-800/10 overflow-hidden">
+              <!-- Client -->
+              <div id="service-client" class="service" style="top: 4px; left: 50%; transform: translateX(-50%); width: 120px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-8 w-8 mb-1 text-white"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <div class="text-sm font-medium text-white">Client</div>
+              </div>
+              
+              <!-- API Gateway -->
+              <div id="service-gateway" class="service" style="top: 100px; left: 50%; transform: translateX(-50%); width: 140px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-8 w-8 mb-1 text-white"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                <div class="text-sm font-medium text-white">API Gateway</div>
+              </div>
+              
+              <!-- Connection Client-Gateway -->
+              <svg class="absolute top-[60px] left-1/2 transform -translate-x-1/2 w-[2px] h-[40px]" xmlns="http://www.w3.org/2000/svg">
+                <line id="connection-client-gateway" x1="1" y1="0" x2="1" y2="40" class="connection" />
+                <line id="connection-gateway-client" x1="1" y1="0" x2="1" y2="40" class="connection" />
+              </svg>
+              
+              <!-- Services -->
+              <div id="service-auth" class="service" style="top: 200px; left: 20%; width: 120px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-8 w-8 mb-1 text-white"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div class="text-sm font-medium text-white">Auth Service</div>
+              </div>
+              
+              <div id="service-user" class="service" style="top: 200px; left: 40%; width: 120px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-8 w-8 mb-1 text-white"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <div class="text-sm font-medium text-white">User Service</div>
+              </div>
+              
+              <div id="service-product" class="service" style="top: 200px; left: 60%; width: 120px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-8 w-8 mb-1 text-white"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>
+                <div class="text-sm font-medium text-white">Product Service</div>
+              </div>
+              
+              <div id="service-order" class="service" style="top: 200px; left: 80%; width: 120px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-8 w-8 mb-1 text-white"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                <div class="text-sm font-medium text-white">Order Service</div>
+              </div>
+              
+              <!-- Connections Gateway-Services -->
+              <svg class="absolute top-[150px] left-0 w-full h-[50px]" xmlns="http://www.w3.org/2000/svg">
+                <line id="connection-gateway-auth" x1="50%" y1="0" x2="20%" y2="50" class="connection" />
+                <line id="connection-auth-gateway" x1="20%" y1="50" x2="50%" y2="0" class="connection" />
+                
+                <line id="connection-gateway-user" x1="50%" y1="0" x2="40%" y2="50" class="connection" />
+                <line id="connection-user-gateway" x1="40%" y1="50" x2="50%" y2="0" class="connection" />
+                
+                <line id="connection-gateway-product" x1="50%" y1="0" x2="60%" y2="50" class="connection" />
+                <line id="connection-product-gateway" x1="60%" y1="50" x2="50%" y2="0" class="connection" />
+                
+                <line id="connection-gateway-order" x1="50%" y1="0" x2="80%" y2="50" class="connection" />
+                <line id="connection-order-gateway" x1="80%" y1="50" x2="50%" y2="0" class="connection" />
+              </svg>
+              
+              <!-- Connections between Services -->
+              <svg class="absolute top-[220px] left-0 w-full h-[20px]" xmlns="http://www.w3.org/2000/svg">
+                <line id="connection-auth-user" x1="20%" y1="0" x2="40%" y2="0" class="connection" />
+                <line id="connection-user-auth" x1="40%" y1="0" x2="20%" y2="0" class="connection" />
+                
+                <line id="connection-user-product" x1="40%" y1="0" x2="60%" y2="0" class="connection" />
+                <line id="connection-product-user" x1="60%" y1="0" x2="40%" y2="0" class="connection" />
+                
+                <line id="connection-product-order" x1="60%" y1="0" x2="80%" y2="0" class="connection" />
+                <line id="connection-order-product" x1="80%" y1="0" x2="60%" y2="0" class="connection" />
+              </svg>
+              
+              <!-- Databases -->
+              <div id="service-user-db" class="service" style="bottom: 100px; left: 40%; width: 120px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-8 w-8 mb-1 text-white"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                <div class="text-sm font-medium text-white">User DB</div>
+              </div>
+              
+              <div id="service-product-db" class="service" style="bottom: 100px; left: 60%; width: 120px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-8 w-8 mb-1 text-white"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                <div class="text-sm font-medium text-white">Product DB</div>
+              </div>
+              
+              <div id="service-order-db" class="service" style="bottom: 100px; left: 80%; width: 120px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-8 w-8 mb-1 text-white"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                <div class="text-sm font-medium text-white">Order DB</div>
+              </div>
+              
+              <!-- Connections Services-Databases -->
+              <svg class="absolute bottom-[150px] left-0 w-full h-[50px]" xmlns="http://www.w3.org/2000/svg">
+                <line id="connection-user-db" x1="40%" y1="0" x2="40%" y2="50" class="connection" />
+                <line id="connection-product-db" x1="60%" y1="0" x2="60%" y2="50" class="connection" />
+                <line id="connection-order-db" x1="80%" y1="0" x2="80%" y2="50" class="connection" />
+              </svg>
+              
+              <!-- Config Server -->
+              <div id="service-config" class="service" style="bottom: 200px; left: 10%; width: 120px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto h-8 w-8 mb-1 text-white"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                <div class="text-sm font-medium text-white">Config Server</div>
+              </div>
+              
+              <!-- Dotted line from Config to Services -->
+              <svg class="absolute bottom-[220px] left-[20%] w-[70%] h-[20px]" xmlns="http://www.w3.org/2000/svg">
+                <line x1="0" y1="10" x2="100%" y2="10" stroke="currentColor" stroke-dasharray="4" stroke-width="1" class="opacity-30" />
+              </svg>
+              
+              <!-- Popup Explanation -->
+              <div id="popup" class="popup">
+                <div class="flex items-center gap-2 mb-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-blue-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <h4 id="popup-title" class="font-bold text-sm text-blue-500"></h4>
+                </div>
+                <p id="popup-message" class="text-xs"></p>
+              </div>
+              
+              <!-- Data Packets will be added dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card p-6 mt-6">
+      <h2 class="text-2xl font-semibold mb-2">Logs de Communication</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        Suivi des messages échangés entre les services
+      </p>
+      <div id="logs-container" class="h-[300px] overflow-y-auto border rounded-md p-4">
+        <div id="logs-empty" class="text-center text-gray-500 dark:text-gray-400 h-full flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 mr-2 text-blue-500 animate-pulse"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg>
+          Sélectionnez un scénario pour voir les logs de communication
+        </div>
+        <div id="logs-list" class="space-y-2 hidden"></div>
+      </div>
+    </div>
+    
+    <div class="card p-6 mt-6">
+      <h2 class="text-2xl font-semibold mb-2">Explication du Scénario</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        Comprendre le flux de communication entre les microservices
+      </p>
+      <div id="explanation-empty" class="text-center text-gray-500 dark:text-gray-400 py-8 flex flex-col items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12 mb-4 text-blue-500/30"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Sélectionnez un scénario pour voir son explication détaillée
+      </div>
+      
+      <div id="explanation-orderCreation" class="space-y-4 hidden">
+        <h3 class="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+          Création d'une commande
+        </h3>
+        
+        <div class="space-y-2 text-sm">
+          <p>
+            Le processus de création d'une commande est un excellent exemple de communication entre plusieurs microservices. 
+            Ce scénario implique presque tous les services de notre architecture:
+          </p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>Le <strong class="text-blue-500">Client</strong> initie la requête en envoyant les détails de la commande à l'API Gateway</li>
+            <li>L'<strong class="text-blue-500">API Gateway</strong> authentifie d'abord la requête via le service d'authentification</li>
+            <li>Le <strong class="text-blue-500">Service Utilisateur</strong> vérifie les informations de l'utilisateur</li>
+            <li>Le <strong class="text-blue-500">Service Produit</strong> vérifie la disponibilité des produits demandés</li>
+            <li>Le <strong class="text-blue-500">Service Commande</strong> crée la commande et coordonne la mise à jour du stock</li>
+            <li>Chaque service communique avec sa propre <strong class="text-blue-500">base de données</strong></li>
+          </ul>
+          <p>
+            Ce scénario montre comment les microservices collaborent pour accomplir une tâche complexe tout en maintenant 
+            leur indépendance. Chaque service a une responsabilité unique et bien définie.
+          </p>
+          <div class="mt-4 p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
+            <h4 class="font-medium text-blue-500 mb-2">Points clés à retenir:</h4>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>La <strong>communication asynchrone</strong> entre services permet d'éviter les blocages</li>
+              <li>La <strong>cohérence éventuelle</strong> est acceptée pour favoriser la disponibilité</li>
+              <li>Les <strong>transactions distribuées</strong> sont gérées via le pattern Saga</li>
+              <li>Chaque service peut <strong>évoluer indépendamment</strong> des autres</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <div id="explanation-productSearch" class="space-y-4 hidden">
+        <h3 class="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+          Recherche de produits
+        </h3>
+        
+        <div class="space-y-2 text-sm">
+          <p>
+            La recherche de produits est un scénario plus simple qui implique principalement le service produit:
+          </p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>Le <strong class="text-blue-500">Client</strong> envoie une requête de recherche avec des critères</li>
+            <li>L'<strong class="text-blue-500">API Gateway</strong> authentifie la requête (même pour les recherches anonymes, une vérification basique est effectuée)</li>
+            <li>Le <strong class="text-blue-500">Service Produit</strong> traite la requête et interroge sa base de données</li>
+            <li>Les résultats sont retournés au client via l'API Gateway</li>
+          </ul>
+          <p>
+            Ce scénario illustre comment même une opération simple bénéficie de l'architecture microservices en termes 
+            de séparation des responsabilités et de scalabilité. Le service produit peut être optimisé et mis à l'échelle 
+            indépendamment pour gérer un grand volume de recherches.
+          </p>
+          <div class="mt-4 p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
+            <h4 class="font-medium text-blue-500 mb-2">Avantages pour la recherche:</h4>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>Possibilité d'utiliser une <strong>base de données spécialisée</strong> pour la recherche (Elasticsearch)</li>
+              <li><strong>Mise en cache</strong> des résultats fréquents pour améliorer les performances</li>
+              <li><strong>Scaling horizontal</strong> du service produit pendant les périodes de forte demande</li>
+              <li>Possibilité d'ajouter des <strong>fonctionnalités avancées</strong> sans impacter les autres services</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <div id="explanation-userAuthentication" class="space-y-4 hidden">
+        <h3 class="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+          Authentification utilisateur
+        </h3>
+        
+        <div class="space-y-2 text-sm">
+          <p>
+            L'authentification utilisateur est un processus fondamental dans toute application:
+          </p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>Le <strong class="text-blue-500">Client</strong> envoie ses identifiants (email/mot de passe)</li>
+            <li>L'<strong class="text-blue-500">API Gateway</strong> transmet la requête au service d'authentification</li>
+            <li>Le <strong class="text-blue-500">Service d'Authentification</strong> collabore avec le service utilisateur pour vérifier les identifiants</li>
+            <li>Le <strong class="text-blue-500">Service Utilisateur</strong> vérifie les informations dans sa base de données</li>
+            <li>Un token JWT est généré et retourné au client</li>
+          </ul>
+          <p>
+            Ce scénario montre comment la sécurité est gérée dans une architecture microservices. 
+            La séparation entre le service d'authentification et le service utilisateur permet une meilleure 
+            gestion des responsabilités et renforce la sécurité du système.
+          </p>
+          <div class="mt-4 p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
+            <h4 class="font-medium text-blue-500 mb-2">Aspects sécurité:</h4>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>Utilisation de <strong>tokens JWT signés</strong> pour l'authentification stateless</li>
+              <li><strong>Séparation des responsabilités</strong> entre authentification et gestion des utilisateurs</li>
+              <li>Possibilité d'intégrer des <strong>fournisseurs d'identité externes</strong> (OAuth, SAML)</li>
+              <li>Gestion centralisée des <strong>politiques de sécurité</strong> et des autorisations</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+// Définition des scénarios
+const scenarios = {
+  orderCreation: {
+    name: "Création d'une commande",
+    steps: [
+      {
+        description: "Le client envoie une requête pour créer une commande",
+        connections: ["client-gateway"],
+        services: ["client"],
+        dataPackets: [{ from: "client", to: "gateway", type: "request" }],
+        logs: [{ service: "Client", message: "POST /api/orders avec données de commande", type: "request" }],
+        popup: {
+          title: "Requête Client",
+          message:
+            "Le client envoie une requête HTTP POST avec les détails de la commande (produits, quantités, adresse de livraison)",
+          position: { x: 50, y: 14 },
+        },
+      },
+      {
+        description: "L'API Gateway authentifie la requête",
+        connections: ["gateway-auth"],
+        services: ["gateway", "auth"],
+        dataPackets: [
+          { from: "gateway", to: "auth", type: "request" },
+          { from: "auth", to: "gateway", type: "response" },
+        ],
+        logs: [
+          { service: "API Gateway", message: "Vérification du token JWT", type: "process" },
+          { service: "Auth Service", message: "Validation du token et des permissions", type: "response" },
+        ],
+        popup: {
+          title: "Authentification",
+          message: "L'API Gateway vérifie que l'utilisateur est authentifié et autorisé à créer une commande",
+          position: { x: 35, y: 60 },
+        },
+      },
+      {
+        description: "L'API Gateway transmet la requête au service utilisateur",
+        connections: ["gateway-user"],
+        services: ["gateway", "user"],
+        dataPackets: [{ from: "gateway", to: "user", type: "request" }],
+        logs: [
+          { service: "API Gateway", message: "Transmission de la requête au User Service", type: "request" },
+          { service: "User Service", message: "Récupération des informations utilisateur", type: "process" },
+        ],
+        popup: {
+          title: "Vérification Utilisateur",
+          message: "L'API Gateway transmet la requête au service utilisateur pour récupérer les informations complètes",
+          position: { x: 45, y: 60 },
+        },
+      },
+      {
+        description: "Le service utilisateur vérifie les données dans sa base",
+        connections: ["user-db"],
+        services: ["user", "user-db"],
+        dataPackets: [
+          { from: "user", to: "user-db", type: "database" },
+          { from: "user-db", to: "user", type: "response" },
+        ],
+        logs: [
+          { service: "User Service", message: "SELECT * FROM users WHERE id = ?", type: "database" },
+          { service: "User DB", message: "Retourne les données utilisateur", type: "response" },
+        ],
+        popup: {
+          title: "Accès Base de Données",
+          message:
+            "Le service utilisateur interroge sa base de données pour vérifier l'existence et les informations de l'utilisateur",
+          position: { x: 40, y: 250 },
+        },
+      },
+      {
+        description: "Le service utilisateur transmet les données au service produit",
+        connections: ["user-product"],
+        services: ["user", "product"],
+        dataPackets: [{ from: "user", to: "product", type: "request" }],
+        logs: [
+          { service: "User Service", message: "Envoi des données au Product Service", type: "request" },
+          { service: "Product Service", message: "Réception de la requête", type: "process" },
+        ],
+        popup: {
+          title: "Communication Inter-Services",
+          message:
+            "Le service utilisateur transmet les données validées au service produit pour vérifier les produits commandés",
+          position: { x: 50, y: 120 },
+        },
+      },
+      {
+        description: "Le service produit vérifie la disponibilité des produits",
+        connections: ["product-db"],
+        services: ["product", "product-db"],
+        dataPackets: [
+          { from: "product", to: "product-db", type: "database" },
+          { from: "product-db", to: "product", type: "response" },
+        ],
+        logs: [
+          { service: "Product Service", message: "SELECT * FROM products WHERE id IN (?)", type: "database" },
+          { service: "Product DB", message: "Vérification du stock disponible", type: "process" },
+          { service: "Product DB", message: "Retourne les données produits", type: "response" },
+        ],
+        popup: {
+          title: "Vérification Stock",
+          message: "Le service produit vérifie la disponibilité en stock des produits demandés dans la commande",
+          position: { x: 60, y: 250 },
+        },
+      },
+      {
+        description: "Le service produit confirme la disponibilité au service commande",
+        connections: ["product-order"],
+        services: ["product", "order"],
+        dataPackets: [{ from: "product", to: "order", type: "response" }],
+        logs: [
+          { service: "Product Service", message: "Confirmation de disponibilité", type: "response" },
+          { service: "Order Service", message: "Réception de la confirmation", type: "process" },
+        ],
+        popup: {
+          title: "Confirmation Disponibilité",
+          message:
+            "Le service produit confirme au service commande que les produits sont disponibles et peuvent être commandés",
+          position: { x: 70, y: 120 },
+        },
+      },
+      {
+        description: "Le service commande crée la commande dans sa base de données",
+        connections: ["order-db"],
+        services: ["order", "order-db"],
+        dataPackets: [
+          { from: "order", to: "order-db", type: "database" },
+          { from: "order-db", to: "order", type: "response" },
+        ],
+        logs: [
+          { service: "Order Service", message: "INSERT INTO orders VALUES (?)", type: "database" },
+          { service: "Order DB", message: "Commande enregistrée avec succès", type: "response" },
+        ],
+        popup: {
+          title: "Création Commande",
+          message:
+            "Le service commande crée un nouvel enregistrement dans sa base de données avec toutes les informations de la commande",
+          position: { x: 80, y: 250 },
+        },
+      },
+      {
+        description: "Le service commande met à jour le stock des produits",
+        connections: ["order-product", "product-db"],
+        services: ["order", "product", "product-db"],
+        dataPackets: [
+          { from: "order", to: "product", type: "request" },
+          { from: "product", to: "product-db", type: "database" },
+          { from: "product-db", to: "product", type: "response" },
+        ],
+        logs: [
+          { service: "Order Service", message: "Demande de mise à jour du stock", type: "request" },
+          {
+            service: "Product Service",
+            message: "UPDATE products SET stock = stock - ? WHERE id = ?",
+            type: "database",
+          },
+          { service: "Product DB", message: "Stock mis à jour", type: "response" },
+        ],
+        popup: {
+          title: "Mise à Jour Stock",
+          message:
+            "Le service commande demande au service produit de mettre à jour les quantités en stock pour les produits commandés",
+          position: { x: 70, y: 180 },
+        },
+      },
+      {
+        description: "Le service commande confirme la création à l'API Gateway",
+        connections: ["order-gateway"],
+        services: ["order", "gateway"],
+        dataPackets: [{ from: "order", to: "gateway", type: "response" }],
+        logs: [
+          { service: "Order Service", message: "Commande #12345 créée avec succès", type: "response" },
+          { service: "API Gateway", message: "Réception de la confirmation", type: "process" },
+        ],
+        popup: {
+          title: "Confirmation Commande",
+          message: "Le service commande confirme à l'API Gateway que la commande a été créée avec succès",
+          position: { x: 65, y: 60 },
+        },
+      },
+      {
+        description: "L'API Gateway retourne la confirmation au client",
+        connections: ["gateway-client"],
+        services: ["gateway", "client"],
+        dataPackets: [{ from: "gateway", to: "client", type: "response" }],
+        logs: [
+          { service: "API Gateway", message: "Retourne la réponse au client", type: "response" },
+          { service: "Client", message: "Commande créée avec succès", type: "process" },
+        ],
+        popup: {
+          title: "Réponse Client",
+          message: "L'API Gateway retourne une réponse HTTP 201 Created avec les détails de la commande créée",
+          position: { x: 50, y: 14 },
+        },
+      },
+    ],
+  },
+  productSearch: {
+    name: "Recherche de produits",
+    steps: [
+      {
+        description: "Le client envoie une requête de recherche de produits",
+        connections: ["client-gateway"],
+        services: ["client"],
+        dataPackets: [{ from: "client", to: "gateway", type: "request" }],
+        logs: [{ service: "Client", message: "GET /api/products?query=smartphone", type: "request" }],
+        popup: {
+          title: "Requête de Recherche",
+          message: "Le client envoie une requête HTTP GET avec des paramètres de recherche (mot-clé, filtres, tri)",
+          position: { x: 50, y: 14 },
+        },
+      },
+      {
+        description: "L'API Gateway authentifie la requête",
+        connections: ["gateway-auth"],
+        services: ["gateway", "auth"],
+        dataPackets: [
+          { from: "gateway", to: "auth", type: "request" },
+          { from: "auth", to: "gateway", type: "response" },
+        ],
+        logs: [
+          { service: "API Gateway", message: "Vérification du token JWT", type: "process" },
+          { service: "Auth Service", message: "Validation du token", type: "response" },
+        ],
+        popup: {
+          title: "Authentification Légère",
+          message: "L'API Gateway vérifie si l'utilisateur est authentifié, mais permet aussi les recherches anonymes",
+          position: { x: 35, y: 60 },
+        },
+      },
+      {
+        description: "L'API Gateway transmet la requête au service produit",
+        connections: ["gateway-product"],
+        services: ["gateway", "product"],
+        dataPackets: [{ from: "gateway", to: "product", type: "request" }],
+        logs: [
+          { service: "API Gateway", message: "Transmission de la requête au Product Service", type: "request" },
+          { service: "Product Service", message: "Réception de la requête de recherche", type: "process" },
+        ],
+        popup: {
+          title: "Routage Requête",
+          message: "L'API Gateway transmet la requête de recherche au service produit qui est responsable du catalogue",
+          position: { x: 55, y: 60 },
+        },
+      },
+      {
+        description: "Le service produit interroge sa base de données",
+        connections: ["product-db"],
+        services: ["product", "product-db"],
+        dataPackets: [
+          { from: "product", to: "product-db", type: "database" },
+          { from: "product-db", to: "product", type: "response" },
+        ],
+        logs: [
+          {
+            service: "Product Service",
+            message: "SELECT * FROM products WHERE name LIKE '%smartphone%'",
+            type: "database",
+          },
+          { service: "Product DB", message: "Exécution de la requête", type: "process" },
+          { service: "Product DB", message: "Retourne 15 résultats", type: "response" },
+        ],
+        popup: {
+          title: "Recherche en Base",
+          message:
+            "Le service produit exécute une requête optimisée dans sa base de données, utilisant potentiellement un index de recherche",
+          position: { x: 60, y: 250 },
+        },
+      },
+      {
+        description: "Le service produit retourne les résultats à l'API Gateway",
+        connections: ["product-gateway"],
+        services: ["product", "gateway"],
+        dataPackets: [{ from: "product", to: "gateway", type: "response" }],
+        logs: [
+          { service: "Product Service", message: "Envoi des résultats de recherche", type: "response" },
+          { service: "API Gateway", message: "Réception des résultats", type: "process" },
+        ],
+        popup: {
+          title: "Résultats de Recherche",
+          message: "Le service produit formate et retourne les résultats de recherche à l'API Gateway",
+          position: { x: 55, y: 60 },
+        },
+      },
+      {
+        description: "L'API Gateway retourne les résultats au client",
+        connections: ["gateway-client"],
+        services: ["gateway", "client"],
+        dataPackets: [{ from: "gateway", to: "client", type: "response" }],
+        logs: [
+          { service: "API Gateway", message: "Retourne la réponse au client", type: "response" },
+          { service: "Client", message: "Affichage des résultats de recherche", type: "process" },
+        ],
+        popup: {
+          title: "Affichage Résultats",
+          message: "L'API Gateway retourne une réponse HTTP 200 avec les résultats de recherche au format JSON",
+          position: { x: 50, y: 14 },
+        },
+      },
+    ],
+  },
+  userAuthentication: {
+    name: "Authentification utilisateur",
+    steps: [
+      {
+        description: "Le client envoie ses identifiants",
+        connections: ["client-gateway"],
+        services: ["client"],
+        dataPackets: [{ from: "client", to: "gateway", type: "request" }],
+        logs: [{ service: "Client", message: "POST /api/auth/login avec identifiants", type: "request" }],
+        popup: {
+          title: "Envoi Identifiants",
+          message: "Le client envoie ses identifiants (email/mot de passe) via une requête HTTP POST sécurisée (HTTPS)",
+          position: { x: 50, y: 14 },
+        },
+      },
+      {
+        description: "L'API Gateway transmet la requête au service d'authentification",
+        connections: ["gateway-auth"],
+        services: ["gateway", "auth"],
+        dataPackets: [{ from: "gateway", to: "auth", type: "request" }],
+        logs: [
+          { service: "API Gateway", message: "Transmission de la requête au Auth Service", type: "request" },
+          { service: "Auth Service", message: "Réception des identifiants", type: "process" },
+        ],
+        popup: {
+          title: "Routage Authentification",
+          message: "L'API Gateway transmet la requête d'authentification au service spécialisé",
+          position: { x: 35, y: 60 },
+        },
+      },
+      {
+        description: "Le service d'authentification vérifie les identifiants avec le service utilisateur",
+        connections: ["auth-user"],
+        services: ["auth", "user"],
+        dataPackets: [{ from: "auth", to: "user", type: "request" }],
+        logs: [
+          { service: "Auth Service", message: "Demande de vérification des identifiants", type: "request" },
+          { service: "User Service", message: "Réception de la demande", type: "process" },
+        ],
+        popup: {
+          title: "Séparation des Responsabilités",
+          message:
+            "Le service d'authentification délègue la vérification des identifiants au service utilisateur qui gère les données utilisateurs",
+          position: { x: 30, y: 120 },
+        },
+      },
+      {
+        description: "Le service utilisateur vérifie les identifiants dans sa base",
+        connections: ["user-db"],
+        services: ["user", "user-db"],
+        dataPackets: [
+          { from: "user", to: "user-db", type: "database" },
+          { from: "user-db", to: "user", type: "response" },
+        ],
+        logs: [
+          { service: "User Service", message: "SELECT * FROM users WHERE email = ?", type: "database" },
+          { service: "User DB", message: "Vérification des identifiants", type: "process" },
+          { service: "User DB", message: "Utilisateur trouvé", type: "response" },
+        ],
+        popup: {
+          title: "Vérification Sécurisée",
+          message:
+            "Le service utilisateur vérifie l'email et compare le hash du mot de passe avec celui stocké en base de données",
+          position: { x: 40, y: 250 },
+        },
+      },
+      {
+        description: "Le service utilisateur confirme l'identité au service d'authentification",
+        connections: ["user-auth"],
+        services: ["user", "auth"],
+        dataPackets: [{ from: "user", to: "auth", type: "response" }],
+        logs: [
+          { service: "User Service", message: "Identifiants valides", type: "response" },
+          { service: "Auth Service", message: "Génération du token JWT", type: "process" },
+        ],
+        popup: {
+          title: "Confirmation Identité",
+          message:
+            "Le service utilisateur confirme que les identifiants sont valides et retourne les informations utilisateur",
+          position: { x: 30, y: 120 },
+        },
+      },
+      {
+        description: "Le service d'authentification retourne le token à l'API Gateway",
+        connections: ["auth-gateway"],
+        services: ["auth", "gateway"],
+        dataPackets: [{ from: "auth", to: "gateway", type: "response" }],
+        logs: [
+          { service: "Auth Service", message: "Token JWT généré avec succès", type: "response" },
+          { service: "API Gateway", message: "Réception du token", type: "process" },
+        ],
+        popup: {
+          title: "Génération Token",
+          message:
+            "Le service d'authentification génère un token JWT signé contenant les informations utilisateur et les permissions",
+          position: { x: 35, y: 60 },
+        },
+      },
+      {
+        description: "L'API Gateway retourne le token au client",
+        connections: ["gateway-client"],
+        services: ["gateway", "client"],
+        dataPackets: [{ from: "gateway", to: "client", type: "response" }],
+        logs: [
+          { service: "API Gateway", message: "Retourne le token au client", type: "response" },
+          { service: "Client", message: "Authentification réussie, token stocké", type: "process" },
+        ],
+        popup: {
+          title: "Authentification Réussie",
+          message:
+            "L'API Gateway retourne le token JWT au client qui le stockera pour les futures requêtes authentifiées",
+          position: { x: 50, y: 14 },
+        },
+      },
+    ],
+  },
+};
+
+// Définition des positions des services pour les animations de paquets de données
+const servicePositions = {
+  client: { x: 50, y: 30 },
+  gateway: { x: 50, y: 120 },
+  auth: { x: 20, y: 220 },
+  user: { x: 40, y: 220 },
+  product: { x: 60, y: 220 },
+  order: { x: 80, y: 220 },
+  "user-db": { x: 40, y: 500 },
+  "product-db": { x: 60, y: 500 },
+  "order-db": { x: 80, y: 500 },
+  config: { x: 10, y: 400 },
+};
+
+// Variables d'état
+let activeScenario = null;
+let activeStep = 0;
+let isAnimating = false;
+let isPaused = false;
+let currentStepTimer = null;
+let animationSpeed = 1;
+let darkMode = true;
+
+// Fonction pour basculer le thème
+function toggleTheme() {
+  darkMode = !darkMode;
+  document.body.classList.toggle("dark", darkMode);
+  document.getElementById("theme-toggle").textContent = darkMode ? "Mode Clair" : "Mode Sombre";
+}
+
+// Fonction pour définir la vitesse d'animation
+function setAnimationSpeed(speed) {
+  animationSpeed = speed;
+  document.querySelectorAll("[data-speed]").forEach((btn) => {
+    btn.classList.remove("button-active");
+  });
+  document.querySelector(`[data-speed="${speed}"]`).classList.add("button-active");
+}
+
+// Fonction pour effacer les logs
+function clearLogs() {
+  document.getElementById("logs-list").innerHTML = "";
+  document.getElementById("logs-empty").classList.remove("hidden");
+  document.getElementById("logs-list").classList.add("hidden");
+}
+
+// Fonction pour effacer les connexions actives
+function clearConnections() {
+  document.querySelectorAll(".connection").forEach((connection) => {
+    connection.classList.remove("connection-active");
+  });
+}
+
+// Fonction pour effacer les services actifs
+function clearServices() {
+  document.querySelectorAll(".service").forEach((service) => {
+    service.classList.remove("service-active");
+  });
+}
+
+// Fonction pour effacer les paquets de données
+function clearDataPackets() {
+  document.querySelectorAll(".data-packet").forEach((packet) => {
+    packet.remove();
+  });
+}
+
+// Fonction pour ajouter un log
+function addLog(log) {
+  const timestamp = new Date().toLocaleTimeString();
+
+  const logItem = document.createElement("div");
+  logItem.className = `log-item log-${log.type}`;
+
+  logItem.innerHTML = `
+    <div class="flex items-center gap-2">
+      <span class="font-semibold">${log.service}</span> 
+      <span class="text-xs text-gray-500 dark:text-gray-400">${timestamp}</span>
+      <span class="badge badge-${log.type}">${log.type}</span>
+    </div>
+    <div class="mt-1">${log.message}</div>
+  `;
+
+  document.getElementById("logs-list").appendChild(logItem);
+
+  // Animation d'apparition
+  setTimeout(() => {
+    logItem.classList.add("log-item-visible");
+  }, 10);
+
+  // Scroll vers le bas
+  document.getElementById("logs-list").scrollTop = document.getElementById("logs-list").scrollHeight;
+}
+
+// Fonction pour initialiser les services avec leurs classes de couleur
+function initializeServices() {
+  document.getElementById("service-client").classList.add("service-client");
+  document.getElementById("service-gateway").classList.add("service-gateway");
+  document.getElementById("service-auth").classList.add("service-auth");
+  document.getElementById("service-user").classList.add("service-user");
+  document.getElementById("service-product").classList.add("service-product");
+  document.getElementById("service-order").classList.add("service-order");
+  document.getElementById("service-config").classList.add("service-config");
+  document.getElementById("service-user-db").classList.add("service-database");
+  document.getElementById("service-product-db").classList.add("service-database");
+  document.getElementById("service-order-db").classList.add("service-database");
+}
+
+// Fonction pour basculer entre pause et lecture
+function togglePausePlay() {
+  isPaused = !isPaused;
+  
+  const pausePlayButton = document.getElementById('pause-play');
+  
+  if (isPaused) {
+    pausePlayButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-4 w-4"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+      Reprendre
+    `;
+    
+    // Si un timer est en cours, le nettoyer
+    if (currentStepTimer) {
+      clearTimeout(currentStepTimer);
+      currentStepTimer = null;
+    }
+  } else {
+    pausePlayButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-4 w-4"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+      Pause
+    `;
+    
+    // Reprendre l'animation
+    animateStep();
+  }
+}
+
+// Fonction pour charger un scénario à une étape spécifique
+function loadScenario(scenarioId, stepIndex = 0) {
+  // Réinitialiser l'état
+  if (isAnimating && currentStepTimer) {
+    clearTimeout(currentStepTimer);
+    currentStepTimer = null;
+  }
+  
+  activeScenario = scenarioId;
+  activeStep = stepIndex;
+  clearLogs();
+  clearConnections();
+  clearServices();
+  clearDataPackets();
+  isPaused = false;
+  isAnimating = true;
+  
+  // Mettre à jour l'interface
+  document.querySelectorAll('[id^="scenario-"]').forEach((btn) => {
+    btn.classList.remove("button-active");
+    if (btn.id === `scenario-${scenarioId}`) {
+      btn.classList.add("button-active");
+    }
+  });
+  
+  document.getElementById('step-info').classList.remove('hidden');
+  document.getElementById('scenario-title').textContent = `Scénario: ${scenarios[scenarioId].name}`;
+  
+  // Afficher l'explication du scénario
+  document.getElementById('explanation-empty').classList.add('hidden');
+  document.querySelectorAll('[id^="explanation-"]').forEach(el => {
+    el.classList.add('hidden');
+  });
+  
+  const explanationElement = document.getElementById(`explanation-${scenarioId}`);
+  if (explanationElement) {
+    explanationElement.classList.remove('hidden');
+  }
+  
+  // Activer les boutons de contrôle
+  document.getElementById('pause-play').disabled = false;
+  document.getElementById('save-scenario').disabled = false;
+  
+  // Mettre à jour le bouton pause/play
+  document.getElementById('pause-play').innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 h-4 w-4"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+    Pause
+  `;
+  
+  // Démarrer l'animation
+  animateStep();
+}
+
+// Fonction pour animer une étape
+function animateStep() {
+  if (!isAnimating || !activeScenario) return;
+  if (isPaused) return;
+  
+  const scenario = scenarios[activeScenario];
+  const currentStep = scenario.steps[activeStep];
+  
+  if (!currentStep) {
+    isAnimating = false;
+    document.getElementById('pause-play').disabled = true;
+    return;
+  }
+  
+  // Mettre à jour l'interface
+  document.getElementById('step-description').textContent = currentStep.description;
+  document.getElementById('progress-bar').style.width = `${(activeStep / scenario.steps.length) * 100}%`;
+  document.getElementById('step-counter').textContent = `Étape ${activeStep + 1} / ${scenario.steps.length}`;
+  
+  // Mettre à jour les connexions actives
+  clearConnections();
+  currentStep.connections.forEach((connectionId) => {
+    const connection = document.getElementById(`connection-${connectionId}`);
+    if (connection) {
+      connection.classList.add("connection-active");
+    }
+  });
+  
+  // Mettre à jour les services actifs
+  clearServices();
+  currentStep.services.forEach((serviceId) => {
+    const service = document.getElementById(`service-${serviceId}`);
+    if (service) {
+      service.classList.add("service-active");
+    }
+  });
+  
+  // Afficher le popup d'explication
+  if (currentStep.popup) {
+    document.getElementById('popup-title').textContent = currentStep.popup.title;
+    document.getElementById('popup-message').textContent = currentStep.popup.message;
+    document.getElementById('popup').style.left = `${currentStep.popup.position.x}%`;
+    document.getElementById('popup').style.top = `${currentStep.popup.position.y}px`;
+    document.getElementById('popup').classList.add("popup-visible");
+  }
+  
+  // Ajouter les paquets de données
+  if (currentStep.dataPackets) {
+    currentStep.dataPackets.forEach((packet, index) => {
+      setTimeout(
+        () => {
+          if (!isPaused) {
+            const packetId = `${packet.from}-${packet.to}-${Date.now()}`;
+            createDataPacket(packetId, packet.from, packet.to, packet.type);
+          }
+        },
+        (index * 800) / animationSpeed,
+      );
+    });
+  }
+  
+  // Ajouter les logs de l'étape
+  if (currentStep.logs) {
+    document.getElementById('logs-empty').classList.add('hidden');
+    document.getElementById('logs-list').classList.remove('hidden');
+    
+    currentStep.logs.forEach((log, index) => {
+      setTimeout(
+        () => {
+          if (!isPaused) {
+            addLog(log);
+          }
+        },
+        (index * 800) / animationSpeed,
+      );
+    });
+  }
+  
+  // Passer à l'étape suivante après un délai
+  const stepDelay = (currentStep.logs.length * 800 + 2500) / animationSpeed;
+  
+  currentStepTimer = setTimeout(
+    () => {
+      if (!isPaused) {
+        document.getElementById('popup').classList.remove("popup-visible");
+        activeStep++;
+        animateStep();
+      }
+    },
+    stepDelay,
+  );
+}
+
+// Fonction pour créer un paquet de données
+function createDataPacket(id, from, to, type) {
+  const fromPos = servicePositions[from];
+  const toPos = servicePositions[to];
+  
+  if (!fromPos || !toPos) return;
+  
+  const packet = document.createElement("div");
+  packet.id = id;
+  packet.className = `data-packet data-packet-${type}`;
+  packet.style.left = `${fromPos.x}%`;
+  packet.style.top = `${fromPos.y}px`;
+  document.getElementById("diagram").appendChild(packet);
+  
+  // Animation de progression du paquet
+  let progress = 0;
+  const animationInterval = setInterval(() => {
+    progress += 5;
+    
+    if (progress >= 100) {
+      clearInterval(animationInterval);
+      setTimeout(() => {
+        packet.remove();
+      }, 500);
+      return;
+    }
+    
+    const x = fromPos.x + (toPos.x - fromPos.x) * (progress / 100);
+    const y = fromPos.y + (toPos.y - fromPos.y) * (progress / 100);
+    
+    packet.style.left = `${x}%`;
+    packet.style.top = `${y}px`;
+  }, 50 / animationSpeed);
+}
+
+// Fonction pour sauvegarder l'état du scénario actuel
+function saveScenarioState(scenarioId, stepIndex) {
+  // Récupérer les scénarios sauvegardés existants
+  const savedScenarios = JSON.parse(localStorage.getItem('savedScenarios') || '[]');
+  
+  // Créer un nouvel objet pour le scénario sauvegardé
+  const timestamp = new Date().toISOString();
+  const scenarioName = scenarios[scenarioId].name;
+  const savedScenario = {
+    id: `${scenarioId}-${timestamp}`,
+    scenarioId: scenarioId,
+    name: scenarioName,
+    step: stepIndex,
+    timestamp: timestamp,
+    displayName: `${scenarioName} (Étape ${stepIndex + 1}/${scenarios[scenarioId].steps.length})`
+  };
+  
+  // Ajouter le nouveau scénario à la liste
+  savedScenarios.push(savedScenario);
+  
+  // Sauvegarder la liste mise à jour
+  localStorage.setItem('savedScenarios', JSON.stringify(savedScenarios));
+  
+  // Mettre à jour l'interface utilisateur
+  updateSavedScenariosList();
+  
+  return savedScenario;
+}
+
+// Fonction pour charger un scénario sauvegardé
+function loadSavedScenario(savedId) {
+  // Récupérer les scénarios sauvegardés
+  const savedScenarios = JSON.parse(localStorage.getItem('savedScenarios') || '[]');
+  
+  // Trouver le scénario sauvegardé par son ID
+  const savedScenario = savedScenarios.find(s => s.id === savedId);
+  
+  if (savedScenario) {
+    // Charger le scénario et définir l'étape
+    loadScenario(savedScenario.scenarioId, savedScenario.step);
+    return true;
+  }
+  
+  return false;
+}
+
+// Fonction pour supprimer un scénario sauvegardé
+function deleteSavedScenario(savedId) {
+  // Récupérer les scénarios sauvegardés
+  const savedScenarios = JSON.parse(localStorage.getItem('savedScenarios') || '[]');
+  
+  // Filtrer pour supprimer le scénario spécifié
+  const updatedScenarios = savedScenarios.filter(s => s.id !== savedId);
+  
+  // Sauvegarder la liste mise à jour
+  localStorage.setItem('savedScenarios', JSON.stringify(updatedScenarios));
+  
+  // Mettre à jour l'interface utilisateur
+  updateSavedScenariosList();
+}
+
+// Fonction pour mettre à jour la liste des scénarios sauvegardés dans l'interface
+function updateSavedScenariosList() {
+  const savedScenariosContainer = document.getElementById('saved-scenarios');
+  const savedScenariosList = document.getElementById('saved-scenarios-list');
+  
+  // Récupérer les scénarios sauvegardés
+  const savedScenarios = JSON.parse(localStorage.getItem('savedScenarios') || '[]');
+  
+  // Vider la liste actuelle
+  savedScenariosList.innerHTML = '';
+  
+  // Afficher ou masquer le conteneur selon qu'il y a des scénarios sauvegardés
+  if (savedScenarios.length === 0) {
+    savedScenariosContainer.classList.add('hidden');
+    return;
+  }
+  
+  savedScenariosContainer.classList.remove('hidden');
+  
+  // Ajouter chaque scénario sauvegardé à la liste
+  savedScenarios.forEach(scenario => {
+    const scenarioItem = document.createElement('div');
+    scenarioItem.className = 'flex items-center justify-between p-2 border rounded-md';
+    
+    const scenarioInfo = document.createElement('div');
+    scenarioInfo.className = 'flex-1';
+    
+    const scenarioName = document.createElement('div');
+    scenarioName.className = 'font-medium text-sm';
+    scenarioName.textContent = scenario.displayName;
+    
+    const scenarioDate = document.createElement('div');
+    scenarioDate.className = 'text-xs text-gray-500 dark:text-gray-400';
+    scenarioDate.textContent = new Date(scenario.timestamp).toLocaleString();
+    
+    scenarioInfo.appendChild(scenarioName);
+    scenarioInfo.appendChild(scenarioDate);
+    
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'flex gap-2';
+    
+    const loadButton = document.createElement('button');
+    loadButton.className = 'button button-outline py-1 px-2 text-xs';
+    loadButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+    loadButton.title = 'Charger ce scénario';
+    loadButton.onclick = () => loadSavedScenario(scenario.id);
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'button button-outline py-1 px-2 text-xs text-red-500 dark:text-red-400';
+    deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+    deleteButton.title = 'Supprimer ce scénario';
+    deleteButton.onclick = () => deleteSavedScenario(scenario.id);
+    
+    buttonsContainer.appendChild(loadButton);
+    buttonsContainer.appendChild(deleteButton);
+    
+    scenarioItem.appendChild(scenarioInfo);
+    scenarioItem.appendChild(buttonsContainer);
+    
+    savedScenariosList.appendChild(scenarioItem);
+  });
+}
+
+// Initialisation
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialiser les services avec leurs classes de couleur
+  initializeServices();
+  
+  // Initialiser la liste des scénarios sauvegardés
+  updateSavedScenariosList();
+  
+  // Gestionnaire pour le bouton thème
+  document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
+  
+  // Gestionnaires pour les boutons de vitesse
+  document.querySelectorAll("[data-speed]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setAnimationSpeed(Number.parseFloat(button.dataset.speed));
+    });
+  });
+  
+  // Gestionnaire pour le bouton pause/play
+  document.getElementById('pause-play').addEventListener('click', () => {
+    togglePausePlay();
+  });
+  
+  // Gestionnaire pour le bouton de sauvegarde
+  document.getElementById('save-scenario').addEventListener('click', () => {
+    if (activeScenario && isAnimating) {
+      const savedScenario = saveScenarioState(activeScenario, activeStep);
+      
+      // Afficher une notification de confirmation
+      alert(`Scénario "${savedScenario.displayName}" sauvegardé avec succès!`);
+    }
+  });
+  
+  // Gestionnaires pour les boutons de scénario
+  document.querySelectorAll('[id^="scenario-"]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const scenarioId = button.id.replace("scenario-", "");
+      loadScenario(scenarioId, 0);
+    });
+  });
+});
+</script>
+</body>
+</html>

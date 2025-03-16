@@ -10,7 +10,7 @@
 
 **Une visualisation interactive et animée de l'architecture microservices**
 
-<img src="images/UI_Sceanario_MicroService.png" alt="Aperçu du projet Microservices Architecture Visualizer">
+<img src="images/UIV2_scenario.png" alt="Aperçu du projet Microservices Architecture Visualizer">
 
 </div>
 
