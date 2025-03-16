@@ -152,6 +152,6 @@ Distribué sous la licence MIT. Voir `LICENSE` pour plus d'informations.
 
 ## 📞 Contact
 
-Votre Nom - [@votre_twitter](https://twitter.com/votre_twitter) - [email@example.com](mailto:email@example.com)
+Oumayma Bramid-  [oumaymabramid@gmail.com](mailto:oumaymabramid@gmail.com)
 
-Lien du projet: [https://github.com/votre-nom/microservices-visualizer](https://github.com/votre-nom/microservices-visualizer)
+Lien du projet: [https://github.com/OumaymaBrd/Architecture-Microservices-Interactive](https://github.com/OumaymaBrd/Architecture-Microservices-Interactive)
