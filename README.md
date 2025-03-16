@@ -29,7 +29,7 @@ Ce visualiseur d'architecture microservices permet de comprendre de manière int
 
 ```shellscript
 # Clonez le dépôt
-git clone https://github.com/votre-nom/microservices-visualizer.git
+git clone git@github.com:OumaymaBrd/Architecture-Microservices-Interactive.git
 
 # Accédez au répertoire du projet
 cd microservices-visualizer
