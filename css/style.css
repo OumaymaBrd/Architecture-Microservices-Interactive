@@ -1,7 +1,4 @@
-/* Ce fichier est optionnel car les styles sont inclus directement dans le HTML via Tailwind */
-/* Vous pouvez l'utiliser pour ajouter des styles personnalisés supplémentaires si nécessaire */
 
-/* Animation de pulsation */
 @keyframes pulse {
     0%,
     100% {
