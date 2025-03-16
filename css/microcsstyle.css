@@ -1,0 +1,313 @@
+   /* Styles de base */
+   .dark {
+    --bg-color: #0f172a;
+    --text-color: #f8fafc;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --primary-color: #3b82f6;
+    --secondary-color: #8b5cf6;
+    }
+    
+    body {
+    background-color: var(--bg-color, #f8fafc);
+    color: var(--text-color, #0f172a);
+    transition: background-color 0.3s, color 0.3s;
+    }
+    
+    .card {
+    background-color: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    /* Styles des services */
+    .service {
+    position: absolute;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 2px solid #e2e8f0;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dark .service {
+    background-color: #1e293b;
+    border-color: #334155;
+    }
+    
+    .service-active {
+    border-color: #3b82f6;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+    animation: pulse 2s infinite;
+    }
+    
+    /* Styles des connexions */
+    .connection {
+    stroke: currentColor;
+    stroke-width: 1px;
+    opacity: 0.3;
+    transition: all 0.3s ease;
+    }
+    
+    .connection-active {
+    stroke: #3b82f6;
+    stroke-width: 3px;
+    opacity: 1;
+    animation: pulse 2s infinite;
+    }
+    
+    /* Styles des paquets de données */
+    .data-packet {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    transition: left 0.05s linear, top 0.05s linear;
+    z-index: 10;
+    }
+    
+    /* Styles pour l'avatar du créateur */
+    .avatar-container {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid #3b82f6;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    }
+    
+    .creator-avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    /* Adaptation pour les écrans plus petits */
+    @media (max-width: 1024px) {
+      .flex.justify-between.items-center.mb-8 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .flex.justify-between.items-center.mb-8 > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .flex.items-center.gap-4 {
+        flex-wrap: wrap;
+      }
+      
+      .border-l.pl-4 {
+        border-left: none;
+        padding-left: 0;
+        margin-top: 0.5rem;
+        width: 100%;
+      }
+    }
+    
+    .data-packet-request {
+    background-color: #3b82f6;
+    }
+    .data-packet-response {
+    background-color: #10b981;
+    }
+    .data-packet-database {
+    background-color: #8b5cf6;
+    }
+    .data-packet-process {
+    background-color: #f59e0b;
+    }
+    
+    /* Styles des popups */
+    .popup {
+    position: absolute;
+    padding: 0.75rem;
+    background-color: white;
+    border: 2px solid rgba(59, 130, 246, 0.2);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    max-width: 250px;
+    z-index: 20;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    }
+    
+    .dark .popup {
+    background-color: #1e293b;
+    border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    .popup-visible {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(0);
+    }
+    
+    /* Styles des logs */
+    .log-item {
+    padding-left: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    border-left-width: 4px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    .log-item-visible {
+    opacity: 1;
+    transform: translateX(0);
+    }
+    
+    .log-request {
+    border-left-color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.05);
+    }
+    
+    .log-response {
+    border-left-color: #10b981;
+    background-color: rgba(16, 185, 129, 0.05);
+    }
+    
+    .log-database {
+    border-left-color: #8b5cf6;
+    background-color: rgba(139, 92, 246, 0.05);
+    }
+    
+    .log-process {
+    border-left-color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.05);
+    }
+    
+    /* Styles des badges */
+    .badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    }
+    
+    .badge-request {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    }
+    
+    .badge-response {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    }
+    
+    .badge-database {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    }
+    
+    .badge-process {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    }
+    
+    /* Animations */
+    @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+    }
+    
+    /* Styles des boutons */
+    .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+    }
+    
+    .button-outline {
+    background-color: transparent;
+    border: 1px solid #e2e8f0;
+    }
+    
+    .dark .button-outline {
+    border-color: #334155;
+    }
+    
+    .button-active {
+    background-color: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+    }
+    
+    .button:hover:not(:disabled) {
+    background-color: rgba(59, 130, 246, 0.1);
+    }
+    
+    .button-active:hover {
+    background-color: #2563eb;
+    }
+    
+    .button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    }
+    
+    /* Styles des services colorés */
+    .service-client {
+    background: linear-gradient(to bottom right, #60a5fa, #2563eb);
+    color: white;
+    }
+    
+    .service-gateway {
+    background: linear-gradient(to bottom right, #a78bfa, #7c3aed);
+    color: white;
+    }
+    
+    .service-auth {
+    background: linear-gradient(to bottom right, #f87171, #dc2626);
+    color: white;
+    }
+    
+    .service-user {
+    background: linear-gradient(to bottom right, #4ade80, #16a34a);
+    color: white;
+    }
+    
+    .service-product {
+    background: linear-gradient(to bottom right, #fbbf24, #d97706);
+    color: white;
+    }
+    
+    .service-order {
+    background: linear-gradient(to bottom right, #f472b6, #db2777);
+    color: white;
+    }
+    
+    .service-config {
+    background: linear-gradient(to bottom right, #22d3ee, #0891b2);
+    color: white;
+    }
+    
+    .service-database {
+    background: linear-gradient(to bottom right, #94a3b8, #64748b);
+    color: white;
+    }
